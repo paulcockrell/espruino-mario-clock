@@ -1,5 +1,5 @@
 /**********************************
-  MARIO CLOCK
+  MARIO CLOCK V3
   + Converting images to 1bit BMP: Image > Mode > Indexed and tick the "Use black and white (1-bit) palette", Then export as BMP.
   + Online Image convertor: https://www.espruino.com/Image+Converter
   + Set time:  In the IDE click Communications, then scroll down and make sure that Set Current Time is checked.
@@ -79,6 +79,13 @@ var pipePlant = {
   buffer : E.toArrayBuffer(atob("FBsNhsHDWPn/gOLQSKQSKQQ="))
 };
 
+var noSound = {
+  width : 10, height : 10, bpp : 1,
+  transparent : 0,
+  buffer : E.toArrayBuffer(atob("hBGCYFQMAQHg9DyGEA=="))
+};
+
+
 var marioSprite = {
   frameIdx: 0,
   frames: [
@@ -96,6 +103,14 @@ var marioSprite = {
   isJumping: false
 };
 
+var noSoundSprite = {
+  frames: [
+    noSound
+  ],
+  x: 73,
+  y: 0
+};
+
 var STATIC_TILES = {
   "_": {img: floor, x: 16 * 8, y: 45},
   "X": {img: sky, x: 0, y: 0},
@@ -110,6 +125,7 @@ var TILES = {
 };
 
 var BACKGROUND,
+    SOUND = 1,
     INITIALIZED = false,
     BACKLIGHT = 1,
     g,
@@ -156,7 +172,8 @@ function onInit() {
   spi.setup({ sck:B1, mosi:B10 });
 
   // Connect button
-  connectButton();
+  connectLightButton();
+  connectSoundButton();
 
   // Reset screen offest;
   screenOffset = 0;
@@ -183,16 +200,19 @@ function onInit() {
   });
 }
 
-function connectButton() {
+function connectLightButton() {
+  pinMode(B5, "input_pulldown");
   setWatch(function(e) {
-    if (BACKLIGHT === 0) {
-      BACKLIGHT = 1;
-    }
-    else {
-      BACKLIGHT = 0;
-    }
+    BACKLIGHT ^= 1;
     A6.write(BACKLIGHT);
   }, B5, { repeat: true, edge: "falling", debounce: 50});
+}
+
+function connectSoundButton() {
+  pinMode(B6, "input_pulldown");
+  setWatch(function(e) {
+    SOUND ^= 1;
+  }, B6, { repeat: true, edge: "falling", debounce: 50});
 }
 
 function redraw() {
@@ -201,6 +221,7 @@ function redraw() {
   drawBackground();
   drawTime();
   drawMario();
+  drawFeedback();
   updateTimer();
 
   g.flip();
@@ -298,7 +319,6 @@ function drawMario() {
     marioSprite.negFrames[marioSprite.frameIdx],
     marioSprite.x,
     marioSprite.y - yShift
-
   );
 
   g.setColor(1);
@@ -307,7 +327,6 @@ function drawMario() {
     marioSprite.x,
     marioSprite.y - yShift
   );
-  
 }
 
 function drawBrick(x, y) {
@@ -334,6 +353,19 @@ function drawTime() {
 
 }
 
+function drawFeedback() {
+  if (SOUND === 0) {
+    g.setColor(0);
+    g.fillRect(73, 0, 83, 10);
+    g.setColor(1);
+    g.drawImage(
+      noSoundSprite.frames[0],
+      noSoundSprite.x,
+      noSoundSprite.y
+    );
+  }
+}
+
 function updateTimer() {
   timer += 50;
   if (timer > ONE_SECOND) {
@@ -347,7 +379,7 @@ function freq(f) {
 }
 
 function play(tune) {
-  if (soundPlaying)
+  if (soundPlaying || SOUND === 0)
     return;
   else
     soundPlaying = true;
