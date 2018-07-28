@@ -1,7 +1,7 @@
 # Espruino Pico Mario Clock
 A simple project using the Espruino Pico to make a cool Mario clock
 <p align="center">
-  <img width="460" height="auto" src="mario_clock.git">
+  <img width="460" height="auto" src="mario_clock.gif">
 </p>
 ## Hardware
 1. [Espruino Pico](https://shop.pimoroni.com/products/espruino-pico)
@@ -12,7 +12,10 @@ A simple project using the Espruino Pico to make a cool Mario clock
 6. [Wire](https://www.amazon.co.uk/Solderless-Flexible-Breadboard-Jumper-Arduino/dp/B00GX6V48C/ref=sr_1_19?ie=UTF8&qid=1532784726&sr=8-19&keywords=wires)
 
 ## Pico diagram
-Before you start putting the parts together, you may wish to review the ![Pico layout diagram](https://espruino.microco.sm/api/v1/files/0fba6a2dac209e59435a7716430c1ef53fa242e0.png)
+Before you start putting the parts together, you may wish to review the Pico layout diagram:
+<p align="center">
+  <img width="460" height="auto" src="https://espruino.microco.sm/api/v1/files/0fba6a2dac209e59435a7716430c1ef53fa242e0.png">
+</p>
 
 ## Setup
 1. Soldering
