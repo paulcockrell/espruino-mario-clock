@@ -3,6 +3,7 @@ A simple project using the Espruino Pico to make a cool Mario clock
 <p align="center">
   <img width="460" height="auto" src="mario_clock.gif">
 </p>
+
 ## Hardware
 1. [Espruino Pico](https://shop.pimoroni.com/products/espruino-pico)
 2. [Nokia display](https://shop.pimoroni.com/products/graphic-lcd-84x48-nokia-5110)
