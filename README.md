@@ -4,12 +4,16 @@ A simple project using the Espruino Pico to make a cool Mario clock
   <img width="460" height="auto" src="mario_clock.gif">
 </p>
 
+Every minute Mario will jump and hit the blocks to change the time. The speaker will make a coin noise when this happens, unless it is at the top or bottom of the hour, where it will play a part of the Mario tune.
+
+It has two buttons, the first turns the display back light on and off, while the second turns the sound on and off
+
 ## Hardware
 1. [Espruino Pico](https://shop.pimoroni.com/products/espruino-pico)
 2. [Nokia display](https://shop.pimoroni.com/products/graphic-lcd-84x48-nokia-5110)
 3. [Speaker](https://shop.pimoroni.com/products/mini-speaker-pc-mount-12mm-2-048khz)
 4. [Buttons](https://www.amazon.co.uk/gp/product/B01N67ICEC/ref=oh_aui_detailpage_o00_s00?ie=UTF8&psc=1)
-5. [Breadboard](https://shop.pimoroni.com/products/colourful-mini-breadboard?variant=264820344) X2
+5. [Breadboard](https://shop.pimoroni.com/products/colourful-mini-breadboard?variant=264820344)
 6. [Wire](https://www.amazon.co.uk/Solderless-Flexible-Breadboard-Jumper-Arduino/dp/B00GX6V48C/ref=sr_1_19?ie=UTF8&qid=1532784726&sr=8-19&keywords=wires)
 
 ## Pico diagram
@@ -19,6 +23,11 @@ Before you start putting the parts together, you may wish to review the Pico lay
 </p>
 
 ## Setup
+The complete wiring diagram for the project:
+<p align="center">
+  <img width="460" height="auto" src="mario_clock.png">
+</p>
+
 1. Soldering
 You must solder the pins into the pico and into the display first, so that they can be inserted in to the breadboard.
 2. Placement
@@ -34,6 +43,7 @@ In the IDE you can open the file `mario_clock.js`, and now we connect the IDE to
 
 Once the Pico is connected, you click the `Send to Espruion` button, it will take a few seconds to send over all the code. Once its completed the transfer, in interactive REPL window you write `save()`. This will install the code on to the Pico and start it.
 
+While prototyping instead of executing the command `save()` to commit the work to the board, you can execute `onInit()`, which is calling the main function of the program.
 ## Notes
 
 ### Power
@@ -43,7 +53,8 @@ When the Pico looses power (by unplugging it from the USB port) it will forget t
 The Pico is not great at keeping the time, and over the days and months the time will drift from the true time. To keep the time correct, an option would be to connect a WiFi module to it, which can get the time from a time server on the internet and keep the time in sync.
 
 ### Graphics
-The graphics were created in (Gimp)[https://www.gimp.org/]. You must create 1 bit BMP images before we can convert them using this [online tool](https://www.espruino.com/Image+Converter)
+The graphics were created in (Gimp)[https://www.gimp.org/]. You must create 1 bit BMP images before we can convert them using this [online tool](https://www.espruino.com/Image+Converter).
+
 To set an image to 1 bit in Gimp you must set the following image attributes:
 
 1. Click `Image`	
@@ -52,4 +63,4 @@ To set an image to 1 bit in Gimp you must set the following image attributes:
 4. In the popup window click `Use black and white (1-bit) palette`
 5. Now _`EXPORT`_ your image as a `BMP`
 
-The [online tool](https://www.espruino.com/Image+Converter) will then allow you to upload your 1-bit BMP and generate a JS snippet with the image converted for you. It also lets you toggle it to inverted.
+The [online tool](https://www.espruino.com/Image+Converter) will then allow you to upload your 1-bit BMP and generate a JS snippet with the image converted for you.
