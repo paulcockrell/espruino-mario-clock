@@ -28,9 +28,9 @@ The complete wiring diagram for the project:
   <img width="460" height="auto" src="mario_clock.png">
 </p>
 
-1. Soldering
+1. *Soldering*:
 You must solder the pins into the pico and into the display first, so that they can be inserted in to the breadboard.
-2. Placement
+2.*&Placement*:
 Follow the wiring diagram, being very carefull to check the wires are connected to the right pins in the Pico, and that the display is aligned to the right most pin in the Pico (A5)
 
 ## Installing the code
