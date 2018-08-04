@@ -8,6 +8,8 @@ Every minute Mario will jump and hit the blocks to change the time. The speaker 
 
 It has two buttons, the first turns the display back light on and off, while the second turns the sound on and off
 
+_Note_: This project is in a prototype state. The projects goal is to have the electronics permanently housed in a mini Gameboy like case. The STL plans for the case will be included with this repo when completed so you can print your own!
+
 ## Hardware
 1. [Espruino Pico](https://shop.pimoroni.com/products/espruino-pico)
 2. [Nokia display](https://shop.pimoroni.com/products/graphic-lcd-84x48-nokia-5110)
