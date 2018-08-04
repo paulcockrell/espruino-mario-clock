@@ -31,29 +31,30 @@ The complete wiring diagram for the project:
 1. *Soldering*:
 You must solder the pins into the pico and into the display first, so that they can be inserted in to the breadboard.
 2. *Placement*:
-Follow the wiring diagram, being very carefull to check the wires are connected to the right pins in the Pico, and that the display is aligned to the right most pin in the Pico (A5)
+Follow the wiring diagram, being very careful to check the wires are connected to the right pins in the Pico, and that the display is aligned to the right most pin in the Pico (A5)
 
 ## Installing the code
 You will need to install the code via the IDE, the instructions may be found [here](https://www.espruino.com/Web+IDE)
 Once you have the IDE setup and also running, and the pico and its components wired up, we can now plug the Pico in to the computers USB port (any USB port).
 
-Clone or download a zip this repo to your computer somewhere, if you donwload this project you must also unzip it.
+Clone or download a zip this repo to your computer somewhere, if you download this project as a zip file you must also unzip it first.
 
 In the IDE you can open the file `mario_clock.js`, and now we connect the IDE to your Pico by clicking the connect button.
 
 Once the Pico is connected, you click the `Send to Espruion` button, it will take a few seconds to send over all the code. Once its completed the transfer, in interactive REPL window you write `save()`. This will install the code on to the Pico and start it.
 
-While prototyping instead of executing the command `save()` to commit the work to the board, you can execute `onInit()`, which is calling the main function of the program.
+While prototyping instead of executing the command `save()` to commit the work to the Pico, you can execute `onInit()`, which will call the main function of the program, thus starting it on the Pico.
+
 ## Notes
 
 ### Power
-When the Pico looses power (by unplugging it from the USB port) it will forget the time as it has no other powersupply to maintain the time. A battery may help solve this.
+When the Pico looses power (by unplugging it from the USB port) it will forget the time as it has no other power supply to maintain the time. A battery may help solve this.
 
 ### Time keeping
 The Pico is not great at keeping the time, and over the days and months the time will drift from the true time. To keep the time correct, an option would be to connect a WiFi module to it, which can get the time from a time server on the internet and keep the time in sync.
 
 ### Graphics
-The graphics were created in (Gimp)[https://www.gimp.org/]. You must create 1 bit BMP images before we can convert them using this [online tool](https://www.espruino.com/Image+Converter).
+The graphics were created in [Gimp](https://www.gimp.org/). You must create 1 bit BMP images before we can convert them using this [online tool](https://www.espruino.com/Image+Converter).
 
 To set an image to 1 bit in Gimp you must set the following image attributes:
 
