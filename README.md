@@ -67,3 +67,14 @@ To set an image to 1 bit in Gimp you must set the following image attributes:
 5. Now _`EXPORT`_ your image as a `BMP`
 
 The [online tool](https://www.espruino.com/Image+Converter) will then allow you to upload your 1-bit BMP and generate a JS snippet with the image converted for you.
+
+## Wrapping it all up
+<p align="center">
+  <img width="460" height="auto" src="mario_clock_gameboy_case.png">
+</p>
+If you want to take the project full geek, you can print out a Gameboy-esq case for this Mario clock project. To fit all the electronics in you may have to design a custom circuit board and get a bit creative about it, but its a nice touch!
+
+In the resources folder of this project are the STL files I have designed (using [TinkerCAD](https://tinkercad.com)). You can use and modify these files to suit your project.
+
+I used a [CELRobox](https://cel-robox) to print mine, but these STL files should be printable on any 3D printer you may have or have access to.
+
