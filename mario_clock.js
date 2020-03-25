@@ -5,12 +5,12 @@
   + Set time:  In the IDE click Communications, then scroll down and make sure that Set Current Time is checked.
                Then the next time you send code to the Espruino board, the Web IDE will automatically set up its RTC.
 **********************************/
-A5.write(0); // GND
-A7.write(1); // VCC
-A6.write(1); // LIGHT
-require("Font8x12").add(Graphics);
 
 var W, H;
+const LIGHTEST = "#effedd";
+const LIGHT = "#add795";
+const DARK = "#588d77";
+const DARKEST = "#122d3e";
 
 // Mario Images
 var marioRunningImage1 = {
@@ -79,13 +79,6 @@ var pipePlant = {
   buffer : E.toArrayBuffer(atob("FBsNhsHDWPn/gOLQSKQSKQQ="))
 };
 
-var noSound = {
-  width : 10, height : 10, bpp : 1,
-  transparent : 0,
-  buffer : E.toArrayBuffer(atob("hBGCYFQMAQHg9DyGEA=="))
-};
-
-
 var marioSprite = {
   frameIdx: 0,
   frames: [
@@ -97,38 +90,28 @@ var marioSprite = {
     marioRunningImage2Neg
   ],
   x: 35,
-  y: 25,
+  y: 45,
   jumpCounter: 0,
   jumpIncrement: Math.PI / 10,
   isJumping: false
 };
 
-var noSoundSprite = {
-  frames: [
-    noSound
-  ],
-  x: 73,
-  y: 0
-};
-
 var STATIC_TILES = {
-  "_": {img: floor, x: 16 * 8, y: 45},
+  "_": {img: floor, x: 16 * 8, y: 65},
   "X": {img: sky, x: 0, y: 0},
   "#": {img: brick, x: 0, y: 0},
 };
 
 var TILES = {
-  "T": {img: pipe, x: 16 * 8, y: 39},
-  "^": {img: pyramid, x: 16 * 8, y: 26},
-  "*": {img: flower, x: 16 * 8, y: 39},
-  "V": {img: pipePlant, x: 16 * 8, y: 30}
+  "T": {img: pipe, x: 16 * 8, y: 59},
+  "^": {img: pyramid, x: 16 * 8, y: 46},
+  "*": {img: flower, x: 16 * 8, y: 58},
+  "V": {img: pipePlant, x: 16 * 8, y: 50}
 };
 
 var BACKGROUND,
-    SOUND = 1,
     INITIALIZED = false,
     BACKLIGHT = 1,
-    g,
     board,
     tempBoard,
     debug = true,
@@ -136,92 +119,13 @@ var BACKGROUND,
     ONE_SECOND = 1000,
     screenOffset = 0;
 
-// Music
-var pitches = {
-  'a':220.00,
-  'b':246.94,
-  'c':261.63,
-  'd':293.66,
-  'e':329.63,
-  'f':349.23,
-  'g':392.00,
-  'A':440.00,
-  'B':493.88,
-  'C':523.25,
-  'D':587.33,
-  'E':659.26,
-  'F':698.46,
-  'G':783.99,
-  'X': 2093, // top C
-  'Y': 3135  // top G
-};
-
-var BUZZER = B4,
-    marioTune = 'EE E CE G   g',
-    coinTune = 'XYYY',
-    soundPlaying = false;
-
-// Main
-function onInit() {
-  clearInterval();
-  LED1.write(1);
-  LED2.write(0);
-
-  // Setup SPI
-  var spi = new SPI();
-  spi.setup({ sck:B1, mosi:B10 });
-
-  // Connect button
-  connectLightButton();
-  connectSoundButton();
-
-  // Reset screen offest;
-  screenOffset = 0;
-
-  // Initialise the LCD
-  g = require("PCD8544").connect(spi, B13, B14, B15, function() {
-    INITIALIZED = true;
-    LED1.write(0);
-    LED2.write(1);
-    setTimeout(function() {
-      LED2.write(0);
-    }, 500);
-    W = g.getWidth();
-    H = g.getHeight();
-    BACKGROUND = new Uint8Array(g.buffer.length);
-    g.setContrast(0.5);
-    g.setFont8x12();
-    g.clear();
-
-    // draw frames
-    setInterval(redraw, 100);
-    // play intro music
-    play(marioTune, 0);
-  });
-}
-
-function connectLightButton() {
-  pinMode(B5, "input_pulldown");
-  setWatch(function(e) {
-    BACKLIGHT ^= 1;
-    A6.write(BACKLIGHT);
-  }, B5, { repeat: true, edge: "falling", debounce: 50});
-}
-
-function connectSoundButton() {
-  pinMode(B6, "input_pulldown");
-  setWatch(function(e) {
-    SOUND ^= 1;
-  }, B6, { repeat: true, edge: "falling", debounce: 50});
-}
-
 function redraw() {
   g.clear();
+  g.setFontVector(9);
 
   drawBackground();
   drawTime();
   drawMario();
-  drawFeedback();
   updateTimer();
 
   g.flip();
@@ -233,7 +137,11 @@ function drawTile(sprite) {
 
 var backgroundArr = [];
 function drawBackground() {
+  g.setColor(LIGHTEST);
+  g.fillRect(0, 0, W, H);
+
   // draw floor
+  g.setColor(DARK);
   for (var x = 0; x < 16; x++) {
     var floorSprite = Object.assign({}, STATIC_TILES._, {x: x * 8});
     drawTile(floorSprite);
@@ -241,6 +149,7 @@ function drawBackground() {
 
   // draw sky
   var skySprite = STATIC_TILES.X;
+  g.setColor(LIGHT);
   drawTile(skySprite);
 
   // new random sprite
@@ -269,9 +178,11 @@ function drawBackground() {
     }
   }
 
+  /* g.setColor("#aed697"); */
+  g.setColor(LIGHT);
   for (x = 0; x < backgroundArr.length; x++) {
     var thing = backgroundArr[x];
-    thing.x -= 3;
+    thing.x -= 5;
     drawTile(thing);
   }
 
@@ -292,10 +203,6 @@ function drawMario() {
 
   if (seconds == 59 && milliseconds > 800 && !marioSprite.isJumping) {
     marioSprite.isJumping = true;
-    if (minutes % 30 === 29)
-      play(marioTune);
-    else
-      play(coinTune);
   }
 
   if (marioSprite.isJumping) {
@@ -309,19 +216,19 @@ function drawMario() {
   }
 
   // calculate animation timing
-  if (timer < 1000 && (timer % (ONE_SECOND / 10) === 0)) {
+  if (timer < 1000 && (timer % (ONE_SECOND / 20) === 0)) {
      marioSprite.frameIdx ^= 1;
   }
 
   //clear behind mario
-  g.setColor(0);
+  g.setColor(LIGHT);
   g.drawImage(
     marioSprite.negFrames[marioSprite.frameIdx],
     marioSprite.x,
     marioSprite.y - yShift
   );
 
-  g.setColor(1);
+  g.setColor(DARKEST);
   g.drawImage(
     marioSprite.frames[marioSprite.frameIdx],
     marioSprite.x,
@@ -329,41 +236,30 @@ function drawMario() {
   );
 }
 
+
 function drawBrick(x, y) {
   var brickSprite = Object.assign({}, STATIC_TILES['#'], {x: x, y: y});
 
-  g.setColor(0);
+  g.setColor(LIGHT);
   g.fillRect(x, y, x + 20, y+14);
-  g.setColor(1);
+  g.setColor(DARK);
   drawTile(brickSprite);
 }
 
 function drawTime() {
   // draw hour brick
-  drawBrick(20, 3);
+  drawBrick(20, 15);
   // draw minute brick
-  drawBrick(42, 3);
+  drawBrick(42, 15);
 
   var t = new Date();
   var hours = ("0" + t.getHours()).substr(-2);
   var mins = ("0" + t.getMinutes()).substr(-2);
 
-  g.drawString(hours, 25, 5);
-  g.drawString(mins, 47, 5);
+  g.setColor(DARKEST);
+  g.drawString(hours, 24, 17);
+  g.drawString(mins, 46, 17);
 
-}
-
-function drawFeedback() {
-  if (SOUND === 0) {
-    g.setColor(0);
-    g.fillRect(73, 0, 83, 10);
-    g.setColor(1);
-    g.drawImage(
-      noSoundSprite.frames[0],
-      noSoundSprite.x,
-      noSoundSprite.y
-    );
-  }
 }
 
 function updateTimer() {
@@ -373,34 +269,28 @@ function updateTimer() {
   }
 }
 
-function freq(f) {
-  if (f===0) digitalWrite(BUZZER,0);
-  else analogWrite(BUZZER, 0.5, { freq: f } );
+
+// Main
+function StartMarioClock() {
+  clearInterval();
+
+  // Reset screen offest;
+  screenOffset = 0;
+
+  Bangle.setLCDMode("80x80");
+  //Bangle.setLCDMode("120x120");
+  //Bangle.setLCDMode("doublebuffered");
+  g.clear();
+  BACKGROUND = new Uint8Array(g.buffer);
+
+  W = g.getWidth();
+  H = g.getHeight();
+
+  // draw frames
+  setInterval(redraw, 100);
+
+  INITIALIZED = true;
 }
 
-function play(tune) {
-  if (soundPlaying || SOUND === 0)
-    return;
-  else
-    soundPlaying = true;
-
-  playTune(tune, 0);
-}
-
-function playTune(tune, pos) {
-  if (pos >= tune.length) {
-    freq(0);
-    soundPlaying = false;
-    return;
-  }
-
-  var ch = tune[pos];
-  if (ch !== undefined) pos++;
-  if (ch in pitches) freq(pitches[ch]);
-  else freq(0);
-
-  setTimeout(function() {
-    playTune(tune, pos);
-  }, 100);
-}
+StartMarioClock();
 
