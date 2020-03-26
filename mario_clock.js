@@ -211,26 +211,25 @@ function drawMario() {
   g.drawImage(
     marioSprite.negFrames[marioSprite.frameIdx],
     marioSprite.x,
-    marioSprite.y + 50
+    marioSprite.y
   );
   g.drawImage(
     marioSprite.frames[marioSprite.frameIdx],
     marioSprite.x,
-    marioSprite.y + 50
+    marioSprite.y
   );
 
   // calculate jumping
-  var t = new Date(),
-      seconds = t.getSeconds(),
-      minutes = t.getMinutes(),
-      milliseconds = t.getMilliseconds();
+  const t = new Date(),
+        seconds = t.getSeconds(),
+        milliseconds = t.getMilliseconds();
 
   if (seconds == 59 && milliseconds > 800 && !marioSprite.isJumping) {
     marioSprite.isJumping = true;
   }
 
   if (marioSprite.isJumping) {
-    marioSprite.y = Math.sin(marioSprite.jumpCounter) * -10;
+    marioSprite.y = (Math.sin(marioSprite.jumpCounter) * -10) + 50 /* Mario Y base value */;
     marioSprite.jumpCounter += marioSprite.jumpIncrement;
 
     if (marioSprite.jumpCounter.toFixed(1) >= 4) {
@@ -250,7 +249,7 @@ function drawMario() {
   g.drawImage(
     marioSprite.negFrames[marioSprite.frameIdx],
     marioSprite.x,
-    marioSprite.y + 50
+    marioSprite.y
   );
 
   // draw mario
@@ -258,7 +257,7 @@ function drawMario() {
   g.drawImage(
     marioSprite.frames[marioSprite.frameIdx],
     marioSprite.x,
-    marioSprite.y + 50
+    marioSprite.y
   );
 }
 
@@ -294,16 +293,13 @@ function drawTime() {
 }
 
 function clearTimers(){
-  //console.log("clearTimers");
   if(intervalRef) {
     clearInterval(intervalRef);
     intervalRef = null;
-    //console.log("interval is cleared");
   }
 }
 
 function startTimers(){
-  console.log("startTimers");
   if(intervalRef) clearTimers();
   intervalRef = setInterval(redraw, 50);
 
@@ -312,7 +308,7 @@ function startTimers(){
 }
 
 // Main
-function Init() {
+function init() {
   clearInterval();
 
   // Initialise display
@@ -322,12 +318,6 @@ function Init() {
   // Store screen dimensions
   W = g.getWidth();
   H = g.getHeight();
-
-  // Draw static background
-  //drawBackground();
-
-  // draw frames
-  //setInterval(redraw, 50);
 
   // Get Mario to jump!
   setWatch(() => {
@@ -341,18 +331,14 @@ function Init() {
 
   Bangle.on('lcdPower', (on) => {
     if (on) {
-      console.log("lcdPower: on");
       startTimers();
     } else {
-      console.log("lcdPower: off");
       clearTimers();
     }
   });
 
   Bangle.on('faceUp',function(up){
-    console.log("faceUp: " + up + " LCD: " + Bangle.isLCDOn());
     if (up && !Bangle.isLCDOn()) {
-      console.log("faceUp and LCD off");
       clearTimers();
       Bangle.setLCDPower(true);
     }
@@ -360,4 +346,5 @@ function Init() {
 }
 
 // Initialise!
-Init();
+init();
+startTimers();
