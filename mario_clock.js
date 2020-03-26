@@ -1,9 +1,8 @@
 /**********************************
-  MARIO CLOCK V3
+  BangleJS MARIO CLOCK V0.1.0
+  + Based on Espruino Mario Clock V3 https://github.com/paulcockrell/espruino-mario-clock
   + Converting images to 1bit BMP: Image > Mode > Indexed and tick the "Use black and white (1-bit) palette", Then export as BMP.
   + Online Image convertor: https://www.espruino.com/Image+Converter
-  + Set time:  In the IDE click Communications, then scroll down and make sure that Set Current Time is checked.
-               Then the next time you send code to the Espruino board, the Web IDE will automatically set up its RTC.
 **********************************/
 
 // Screen dimensions
@@ -110,7 +109,7 @@ const STATIC_TILES = {
 
 const TILES = {
   "T": {img: pipe, x: 16 * 8, y: 69},
-  "^": {img: pyramid, x: 16 * 8, y: 56},
+  "^": {img: pyramid, x: 16 * 8, y: 55},
   "*": {img: flower, x: 16 * 8, y: 68},
   "V": {img: pipePlant, x: 16 * 8, y: 60}
 };
@@ -120,17 +119,12 @@ const ONE_SECOND = 1000;
 let BACKGROUND;
 let timer = 0;
 
-
 function redraw() {
-  // Reset the screen
-  g.clear();
-  g.setFontVector(9);
-
   // Update timers
   incrementTimer();
 
   // Draw frame
-  drawBackground();
+  drawScenery();
   drawTime();
   drawMario();
 
@@ -167,14 +161,16 @@ function drawBackground() {
   var skySprite = STATIC_TILES.X;
   g.setColor(LIGHT);
   drawTile(skySprite);
+}
 
+function drawScenery() {
   // new random sprite
-  var spriteKeys = Object.keys(TILES);
-  var key = spriteKeys[Math.floor(Math.random() * spriteKeys.length)];
-  var newSprite = Object.assign({}, TILES[key]);
+  const spriteKeys = Object.keys(TILES);
+  const key = spriteKeys[Math.floor(Math.random() * spriteKeys.length)];
+  let newSprite = Object.assign({}, TILES[key]);
 
   // remove first sprite if offscreen
-  var firstBackgroundSprite = backgroundArr[0];
+  let firstBackgroundSprite = backgroundArr[0];
   if (firstBackgroundSprite) {
       if (firstBackgroundSprite.x < -20) backgroundArr.splice(0, 1);
   }
@@ -194,19 +190,18 @@ function drawBackground() {
     }
   }
 
-  /* g.setColor("#aed697"); */
-  g.setColor(LIGHT);
   for (x = 0; x < backgroundArr.length; x++) {
-    var thing = backgroundArr[x];
-    thing.x -= 5;
-    drawTile(thing);
+    let scenerySprite = backgroundArr[x];
+
+    // clear sprite at previous position
+    g.setColor(LIGHTEST);
+    drawTile(scenerySprite);
+
+    // draw sprite in new position
+    g.setColor(LIGHT);
+    scenerySprite.x -= 5;
+    drawTile(scenerySprite);
   }
-
-  // set background buffer
-  BACKGROUND.set(g.buffer);
-
-  // refresh background
-  new Uint8Array(g.buffer).set(BACKGROUND.buffer);
 }
 
 function drawMario() {
@@ -232,14 +227,25 @@ function drawMario() {
   }
 
   // calculate animation timing
-  /*
-  if (timer < ONE_SECOND && (timer % (ONE_SECOND / 2) === 0)) {
-     marioSprite.frameIdx ^= 1;
-  }
-  */
-  if (timer % 100 === 0) marioSprite.frameIdx ^= 1;
+  if (timer % 100 === 0) {
+    // clear old mario frame
+    g.setColor(LIGHTEST);
+    g.drawImage(
+      marioSprite.negFrames[marioSprite.frameIdx],
+      marioSprite.x,
+      marioSprite.y
+    );
+    g.drawImage(
+      marioSprite.frames[marioSprite.frameIdx],
+      marioSprite.x,
+      marioSprite.y
+    );
 
-  //clear behind mario
+    // shift to next frame
+    marioSprite.frameIdx ^= 1;
+  }
+
+  // colour in mario
   g.setColor(LIGHT);
   g.drawImage(
     marioSprite.negFrames[marioSprite.frameIdx],
@@ -247,6 +253,7 @@ function drawMario() {
     marioSprite.y - yShift
   );
 
+  // draw mario
   g.setColor(DARKEST);
   g.drawImage(
     marioSprite.frames[marioSprite.frameIdx],
@@ -257,10 +264,13 @@ function drawMario() {
 
 
 function drawBrick(x, y) {
-  var brickSprite = Object.assign({}, STATIC_TILES['#'], {x: x, y: y});
+  const brickSprite = Object.assign({}, STATIC_TILES['#'], {x: x, y: y});
 
+  // draw brick background colour
   g.setColor(LIGHT);
   g.fillRect(x, y, x + 20, y+14);
+  
+  // draw brick sprite
   g.setColor(DARK);
   drawTile(brickSprite);
 }
@@ -275,6 +285,8 @@ function drawTime() {
   var hours = ("0" + t.getHours()).substr(-2);
   var mins = ("0" + t.getMinutes()).substr(-2);
 
+  // draw the time figures
+  g.setFontVector(9);
   g.setColor(DARKEST);
   g.drawString(hours, 24, 27);
   g.drawString(mins, 46, 27);
@@ -285,12 +297,18 @@ function drawTime() {
 function StartMarioClock() {
   clearInterval();
 
+  // Initialise display
   Bangle.setLCDMode("80x80");
   g.clear();
-  BACKGROUND = new Uint8Array(g.buffer);
+  Bangle.loadWidgets();
+  Bangle.drawWidgets();
 
+  // Store screen dimensions
   W = g.getWidth();
   H = g.getHeight();
+
+  // Draw static background
+  drawBackground();
 
   // draw frames
   setInterval(redraw, 50);
@@ -298,9 +316,10 @@ function StartMarioClock() {
   // Get Mario to jump!
   setWatch(() => {
     Bangle.buzz();
+    E.showMessage("WHAT");
     if (!marioSprite.isJumping) marioSprite.isJumping = true;
   }, BTN2, {repeat:true});
 }
 
+// Run!
 StartMarioClock();
-
