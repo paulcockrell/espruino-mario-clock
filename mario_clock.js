@@ -6,80 +6,86 @@
                Then the next time you send code to the Espruino board, the Web IDE will automatically set up its RTC.
 **********************************/
 
-var W, H;
+// Screen dimensions
+let W, H;
+
+// Space to draw watch widgets (e.g battery, bluetooth status)
+const WIDGETS_GUTTER = 10;
+
+// Colours
 const LIGHTEST = "#effedd";
 const LIGHT = "#add795";
 const DARK = "#588d77";
 const DARKEST = "#122d3e";
 
 // Mario Images
-var marioRunningImage1 = {
+const marioRunningImage1 = {
   width : 15, height : 20, bpp : 1,
   transparent : 0,
   buffer : E.toArrayBuffer(atob("B8AfwH+B/8f/z4M+KExcnAUSCw87w4L8CJQRNB/YH+AxgCEAPAA="))
 };
 
-var marioRunningImage1Neg = {
+const marioRunningImage1Neg = {
   width : 15, height : 20, bpp : 1,
   transparent : 0,
   buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAHwB0DOgY/jt8PDAPAEAB2gOyAAgAAAOAB4AAAA="))
 };
 
-var marioRunningImage2 = {
+const marioRunningImage2 = {
   width : 15, height : 20, bpp : 1,
   transparent : 0,
   buffer : E.toArrayBuffer(atob("B8AfwH+B/8f/z4M+KExcnAUSCw87w4J6BEsPnSfyT+S+OMAAAAA="))
 };
 
-var marioRunningImage2Neg = {
+const marioRunningImage2Neg = {
   width : 15, height : 20, bpp : 1,
   transparent : 0,
   buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAHwB0DOgY/jt8PDAPAGEA7QAYhgMMBhAAAAAAAA="))
 };
 
-var pyramid = {
+const pyramid = {
   width : 20, height : 20, bpp : 1,
   transparent : 0,
   buffer : E.toArrayBuffer(atob("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAkAAQgAIEAEAgCAEBAAggAEQAAoAAE="))
 };
 
-var pipe = {
+const pipe = {
   width : 9, height : 6, bpp : 1,
   transparent : 0,
   buffer : E.toArrayBuffer(atob("/8BxaCRSCA=="))
 };
 
-var floor = {
+const floor = {
   width : 8, height : 3, bpp : 1,
   transparent : 0,
   buffer : E.toArrayBuffer(atob("/6pE"))
 };
 
-var sky = {
+const sky = {
   width : 128, height : 30, bpp : 1,
   transparent : 0,
   buffer : E.toArrayBuffer(atob("VVVVVVVVVVVVVVVVVVVVVQAAAAAAAAAAAAAAAAAAAABVVVVVVVVVVVVVVVVVVVVVIiIiIiIiIiIiIiIiIiIiIlVVVVVVVVVVVVVVVVVVVVWIiIiIiIiIiIiIiIiIiIiIVVVVVVVVVVVVVVVVVVVVVSIiIiIiIiICIiIiIiIiIiJVVVVVVVVVAVVVVVVVVVVViIiIiIiIiACIiIiIiIiIiFVVVVVVVVQAVVVVVVVVVVUiIiIiIiIgACIiIiIiIiIiVVVVVVVVUAAVVVUBVVVVUKqqqqqqqggAKCqqAKqqqoBVUBVVVVQAABAVVABVVVUAIiACIiIgAAAgAiAAIiIiAFVABVVVUAAAUAVUABRVVQCqgAKCqqAAACAAAAAgCqoAVUABAVVAAAAAAAAAAAVQAKqAAACqoAAAAAAAAAACgABAAAAAUEAAAAAAAAAABQAAgAAAACAAAAAAAAAAAAIAAAAAAABQAAAAAAAAAAAEAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"))
 };
 
-var brick = {
+const brick = {
   width : 21, height : 15, bpp : 1,
   transparent : 0,
   buffer : E.toArrayBuffer(atob("f//0AABoAAsAABgAAMAABgAAMAABgAAMAABgAAMAABoAAsAABf//wA=="))
 };
 
-var flower = {
+const flower = {
   width : 7, height : 7, bpp : 1,
   transparent : 0,
   buffer : E.toArrayBuffer(atob("fY3wjW+OAA=="))
 };
 
-var pipePlant = {
+const pipePlant = {
   width : 9, height : 15, bpp : 1,
   transparent : 0,
   buffer : E.toArrayBuffer(atob("FBsNhsHDWPn/gOLQSKQSKQQ="))
 };
 
-var marioSprite = {
+let marioSprite = {
   frameIdx: 0,
   frames: [
     marioRunningImage1,
@@ -90,45 +96,55 @@ var marioSprite = {
     marioRunningImage2Neg
   ],
   x: 35,
-  y: 45,
+  y: 55,
   jumpCounter: 0,
   jumpIncrement: Math.PI / 10,
   isJumping: false
 };
 
-var STATIC_TILES = {
-  "_": {img: floor, x: 16 * 8, y: 65},
-  "X": {img: sky, x: 0, y: 0},
+const STATIC_TILES = {
+  "_": {img: floor, x: 16 * 8, y: 75},
+  "X": {img: sky, x: 0, y: 10},
   "#": {img: brick, x: 0, y: 0},
 };
 
-var TILES = {
-  "T": {img: pipe, x: 16 * 8, y: 59},
-  "^": {img: pyramid, x: 16 * 8, y: 46},
-  "*": {img: flower, x: 16 * 8, y: 58},
-  "V": {img: pipePlant, x: 16 * 8, y: 50}
+const TILES = {
+  "T": {img: pipe, x: 16 * 8, y: 69},
+  "^": {img: pyramid, x: 16 * 8, y: 56},
+  "*": {img: flower, x: 16 * 8, y: 68},
+  "V": {img: pipePlant, x: 16 * 8, y: 60}
 };
 
-var BACKGROUND,
-    INITIALIZED = false,
-    BACKLIGHT = 1,
-    board,
-    tempBoard,
-    debug = true,
-    timer = 0,
-    ONE_SECOND = 1000,
-    screenOffset = 0;
+const ONE_SECOND = 1000;
+
+let BACKGROUND;
+let timer = 0;
+
 
 function redraw() {
+  // Reset the screen
   g.clear();
   g.setFontVector(9);
 
+  // Update timers
+  incrementTimer();
+
+  // Draw frame
   drawBackground();
   drawTime();
   drawMario();
-  updateTimer();
 
+  // Render new frame
   g.flip();
+}
+
+function incrementTimer() {
+  if (timer > 1000) {
+    timer = 0;
+  }
+  else {
+    timer += 50;
+  }
 }
 
 function drawTile(sprite) {
@@ -138,7 +154,7 @@ function drawTile(sprite) {
 var backgroundArr = [];
 function drawBackground() {
   g.setColor(LIGHTEST);
-  g.fillRect(0, 0, W, H);
+  g.fillRect(0, 10, W, H);
 
   // draw floor
   g.setColor(DARK);
@@ -209,16 +225,19 @@ function drawMario() {
     yShift = ((Math.sin(marioSprite.jumpCounter).toFixed(1) * 10));
     marioSprite.jumpCounter += marioSprite.jumpIncrement;
 
-    if (yShift < 0) {
+    if (yShift <= 0) {
       marioSprite.jumpCounter = 0;
       marioSprite.isJumping = false;
     }
   }
 
   // calculate animation timing
-  if (timer < 1000 && (timer % (ONE_SECOND / 20) === 0)) {
+  /*
+  if (timer < ONE_SECOND && (timer % (ONE_SECOND / 2) === 0)) {
      marioSprite.frameIdx ^= 1;
   }
+  */
+  if (timer % 100 === 0) marioSprite.frameIdx ^= 1;
 
   //clear behind mario
   g.setColor(LIGHT);
@@ -248,38 +267,25 @@ function drawBrick(x, y) {
 
 function drawTime() {
   // draw hour brick
-  drawBrick(20, 15);
+  drawBrick(20, 25);
   // draw minute brick
-  drawBrick(42, 15);
+  drawBrick(42, 25);
 
   var t = new Date();
   var hours = ("0" + t.getHours()).substr(-2);
   var mins = ("0" + t.getMinutes()).substr(-2);
 
   g.setColor(DARKEST);
-  g.drawString(hours, 24, 17);
-  g.drawString(mins, 46, 17);
+  g.drawString(hours, 24, 27);
+  g.drawString(mins, 46, 27);
 
 }
-
-function updateTimer() {
-  timer += 50;
-  if (timer > ONE_SECOND) {
-    timer = 0;
-  }
-}
-
 
 // Main
 function StartMarioClock() {
   clearInterval();
 
-  // Reset screen offest;
-  screenOffset = 0;
-
   Bangle.setLCDMode("80x80");
-  //Bangle.setLCDMode("120x120");
-  //Bangle.setLCDMode("doublebuffered");
   g.clear();
   BACKGROUND = new Uint8Array(g.buffer);
 
@@ -287,9 +293,13 @@ function StartMarioClock() {
   H = g.getHeight();
 
   // draw frames
-  setInterval(redraw, 100);
+  setInterval(redraw, 50);
 
-  INITIALIZED = true;
+  // Get Mario to jump!
+  setWatch(() => {
+    Bangle.buzz();
+    if (!marioSprite.isJumping) marioSprite.isJumping = true;
+  }, BTN2, {repeat:true});
 }
 
 StartMarioClock();
