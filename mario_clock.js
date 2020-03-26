@@ -8,6 +8,8 @@
 // Screen dimensions
 let W, H;
 
+let intervalRef = null;
+
 // Space to draw watch widgets (e.g battery, bluetooth status)
 const WIDGETS_GUTTER = 10;
 
@@ -116,8 +118,8 @@ const TILES = {
 
 const ONE_SECOND = 1000;
 
-let BACKGROUND;
 let timer = 0;
+let backgroundArr = [];
 
 function redraw() {
   // Update timers
@@ -145,7 +147,6 @@ function drawTile(sprite) {
   g.drawImage(sprite.img, sprite.x, sprite.y);
 }
 
-var backgroundArr = [];
 function drawBackground() {
   g.setColor(LIGHTEST);
   g.fillRect(0, 10, W, H);
@@ -205,22 +206,34 @@ function drawScenery() {
 }
 
 function drawMario() {
+  // clear old mario frame
+  g.setColor(LIGHTEST);
+  g.drawImage(
+    marioSprite.negFrames[marioSprite.frameIdx],
+    marioSprite.x,
+    marioSprite.y + 50
+  );
+  g.drawImage(
+    marioSprite.frames[marioSprite.frameIdx],
+    marioSprite.x,
+    marioSprite.y + 50
+  );
+
   // calculate jumping
   var t = new Date(),
       seconds = t.getSeconds(),
       minutes = t.getMinutes(),
-      milliseconds = t.getMilliseconds(),
-      yShift = 0;
+      milliseconds = t.getMilliseconds();
 
   if (seconds == 59 && milliseconds > 800 && !marioSprite.isJumping) {
     marioSprite.isJumping = true;
   }
 
   if (marioSprite.isJumping) {
-    yShift = ((Math.sin(marioSprite.jumpCounter).toFixed(1) * 10));
+    marioSprite.y = Math.sin(marioSprite.jumpCounter) * -10;
     marioSprite.jumpCounter += marioSprite.jumpIncrement;
 
-    if (yShift <= 0) {
+    if (marioSprite.jumpCounter.toFixed(1) >= 4) {
       marioSprite.jumpCounter = 0;
       marioSprite.isJumping = false;
     }
@@ -228,19 +241,6 @@ function drawMario() {
 
   // calculate animation timing
   if (timer % 100 === 0) {
-    // clear old mario frame
-    g.setColor(LIGHTEST);
-    g.drawImage(
-      marioSprite.negFrames[marioSprite.frameIdx],
-      marioSprite.x,
-      marioSprite.y
-    );
-    g.drawImage(
-      marioSprite.frames[marioSprite.frameIdx],
-      marioSprite.x,
-      marioSprite.y
-    );
-
     // shift to next frame
     marioSprite.frameIdx ^= 1;
   }
@@ -250,7 +250,7 @@ function drawMario() {
   g.drawImage(
     marioSprite.negFrames[marioSprite.frameIdx],
     marioSprite.x,
-    marioSprite.y - yShift
+    marioSprite.y + 50
   );
 
   // draw mario
@@ -258,7 +258,7 @@ function drawMario() {
   g.drawImage(
     marioSprite.frames[marioSprite.frameIdx],
     marioSprite.x,
-    marioSprite.y - yShift
+    marioSprite.y + 50
   );
 }
 
@@ -269,7 +269,7 @@ function drawBrick(x, y) {
   // draw brick background colour
   g.setColor(LIGHT);
   g.fillRect(x, y, x + 20, y+14);
-  
+
   // draw brick sprite
   g.setColor(DARK);
   drawTile(brickSprite);
@@ -281,9 +281,9 @@ function drawTime() {
   // draw minute brick
   drawBrick(42, 25);
 
-  var t = new Date();
-  var hours = ("0" + t.getHours()).substr(-2);
-  var mins = ("0" + t.getMinutes()).substr(-2);
+  const t = new Date();
+  const hours = ("0" + t.getHours()).substr(-2);
+  const mins = ("0" + t.getMinutes()).substr(-2);
 
   // draw the time figures
   g.setFontVector(9);
@@ -293,33 +293,71 @@ function drawTime() {
 
 }
 
+function clearTimers(){
+  //console.log("clearTimers");
+  if(intervalRef) {
+    clearInterval(intervalRef);
+    intervalRef = null;
+    //console.log("interval is cleared");
+  }
+}
+
+function startTimers(){
+  console.log("startTimers");
+  if(intervalRef) clearTimers();
+  intervalRef = setInterval(redraw, 50);
+
+  drawBackground();
+  redraw();
+}
+
 // Main
-function StartMarioClock() {
+function Init() {
   clearInterval();
 
   // Initialise display
   Bangle.setLCDMode("80x80");
   g.clear();
-  Bangle.loadWidgets();
-  Bangle.drawWidgets();
 
   // Store screen dimensions
   W = g.getWidth();
   H = g.getHeight();
 
   // Draw static background
-  drawBackground();
+  //drawBackground();
 
   // draw frames
-  setInterval(redraw, 50);
+  //setInterval(redraw, 50);
 
   // Get Mario to jump!
   setWatch(() => {
-    Bangle.buzz();
-    E.showMessage("WHAT");
-    if (!marioSprite.isJumping) marioSprite.isJumping = true;
-  }, BTN2, {repeat:true});
+    if (intervalRef && !marioSprite.isJumping) marioSprite.isJumping = true;
+  }, BTN1, {repeat:true});
+
+  setWatch(() => {
+    Bangle.setLCDMode();
+    Bangle.showLauncher();
+  }, BTN2, {repeat:false,edge:"falling"});
+
+  Bangle.on('lcdPower', (on) => {
+    if (on) {
+      console.log("lcdPower: on");
+      startTimers();
+    } else {
+      console.log("lcdPower: off");
+      clearTimers();
+    }
+  });
+
+  Bangle.on('faceUp',function(up){
+    console.log("faceUp: " + up + " LCD: " + Bangle.isLCDOn());
+    if (up && !Bangle.isLCDOn()) {
+      console.log("faceUp and LCD off");
+      clearTimers();
+      Bangle.setLCDPower(true);
+    }
+  });
 }
 
-// Run!
-StartMarioClock();
+// Initialise!
+Init();
